@@ -4,32 +4,32 @@
 
 
 // Definitions Arduino pins connected to input H Bridge 
-// #define IN1 5 //motor pwm pin values 0-255
-// #define IN2 6 //motor pwm pin vlues 0-255
-// #define SW1 7 //top switch
-// #define SW2 8 //second to top switch
-// #define SW3 9 // second to bottom switch
-// #define SW4 10 // bottom switch
-// #define OPEN_BTN 2 //OPEN_BTN connected to pin 2 external interrupt
+#define IN1 0 //motor pwm pin values 0-255 (D9)
+#define IN2 4 //motor pwm pin vlues 0-255 (D10)
+#define SW1 26 //top switch (D12)
+#define SW2 27 //second to top switch (D11)
+#define SW3 2 // second to bottom switch (D8)
+#define SW4 5 // bottom switch (D7)
+#define OPEN_BTN 13 //OPEN_BTN connected to pin 2 external interrupt (D2)
 // #define OPEN_APP 3 //OPEN_APP connected to pin 3 external interrupt
-// #define PWR_LED 4  //PWR_LED connected to 7
-// #define FMD 14 //front motion detechtor
-// #define BMD 15 //back motion detector
-// #define ON 1
-// #define OFF 0
-// #define MAX 255
-// #define MIN 0
+#define PWR_LED 25  //PWR_LED connected to (D6)
+#define FMD 15 //front motion detechtor (D5)
+#define BMD 14 //back motion detector (D4)
+#define ON 1
+#define OFF 0
+#define MAX 255
+#define MIN 0
 
-// int RFID_PWR = ON; 
-// int old_FMD;  
-// int old_BMD;
-// int cur_FMD = HIGH;
-// int cur_BMD = HIGH; 
+int RFID_PWR = ON; 
+int old_FMD;  
+int old_BMD;
+int cur_FMD = HIGH;
+int cur_BMD = HIGH; 
 
-//need to research how to permanently store tag #s and read RFID #s
+// need to research how to permanently store tag #s and read RFID #s
 
-// int reader = OFF;
-// int tag = OFF;
+int reader = OFF;
+int tag = OFF;
 
 // code from internet
 String ssids_array[50];
@@ -49,37 +49,37 @@ bool bluetooth_disconnect = false;
 
 enum wifi_setup_stages { NONE, SCAN_START, SCAN_COMPLETE, SSID_ENTERED, WAIT_PASS, PASS_ENTERED, WAIT_CONNECT, LOGIN_FAILED };
 enum wifi_setup_stages wifi_stage = NONE;
-// 
-// enum states {
-//   IDLE,
-//   OPEN,
-//   CLOSE
-// };
 
-// states state;  //Global variable to store which state we're in
+enum states {
+  IDLE,
+  OPEN,
+  CLOSE
+};
+
+states state;  //Global variable to store which state we're in
 // internet code
 
 BluetoothSerial SerialBT;
 Preferences preferences;
 //
 void setup() {
-  // state = IDLE;  //initate in the idle state
-  // // Set the output pins
-  // pinMode(IN1, OUTPUT); 
-  // pinMode(IN2, OUTPUT); 
-  // pinMode(OPEN_BTN, INPUT);
+  state = IDLE;  //initate in the idle state
+  // Set the output pins
+  pinMode(IN1, OUTPUT); 
+  pinMode(IN2, OUTPUT); 
+  pinMode(OPEN_BTN, INPUT);
   // pinMode(OPEN_APP, INPUT);
-  // pinMode(FMD, INPUT);
-  // pinMode(BMD, INPUT);
-  // pinMode(PWR_LED, OUTPUT);
-  // digitalWrite(PWR_LED, HIGH); 
-  // attachInterrupt(digitalPinToInterrupt(2),openbtnPressed,RISING); 
+  pinMode(FMD, INPUT);
+  pinMode(BMD, INPUT);
+  pinMode(PWR_LED, OUTPUT);
+  digitalWrite(PWR_LED, HIGH); 
+  attachInterrupt(digitalPinToInterrupt(OPEN_BTN),openbtnPressed,RISING); 
   // attachInterrupt(digitalPinToInterrupt(3),openappPressed,RISING); 
-
+  preferences.begin("pet_id", false); // allows for saving id #s to permanent memory
   Serial.begin(115200);
   Serial.println("Booting...");
 
-  preferences.begin("wifi_access", false);
+  preferences.begin("wifi_access", false); //allows for saving wifi info to permanent memory
   if (init_wifi() == false) { // Connect to Wi-Fi fails
     SerialBT.register_callback(callback);
   } 
@@ -185,144 +185,149 @@ void disconnect_bluetooth()
 }
 
 void loop() {
-  if (bluetooth_disconnect)
-  {
-    disconnect_bluetooth();
+
+  switch(state){
+    case IDLE:
+    if (state == OPEN){
+      break;  // switch to open state
+    }
+
+    /////////
+    if (bluetooth_disconnect) //possibly move all into idle state
+    {
+      disconnect_bluetooth();
+    }
+
+    switch (wifi_stage)
+    {
+      case SCAN_START:
+        SerialBT.println("Scanning Wi-Fi networks");
+        Serial.println("Scanning Wi-Fi networks");
+        scan_wifi_networks();
+        SerialBT.println("Please enter the number for your Wi-Fi");
+        wifi_stage = SCAN_COMPLETE;
+        break;
+
+      case SSID_ENTERED:
+        SerialBT.println("Please enter your Wi-Fi password");
+        Serial.println("Please enter your Wi-Fi password");
+        wifi_stage = WAIT_PASS;
+        break;
+
+      case PASS_ENTERED:
+        SerialBT.println("Please wait for Wi-Fi connection...");
+        Serial.println("Please wait for Wi_Fi connection...");
+        wifi_stage = WAIT_CONNECT;
+        preferences.putString("pref_ssid", client_wifi_ssid);
+        preferences.putString("pref_pass", client_wifi_password);
+        if (init_wifi()) { // Connected to WiFi
+          connected_string = "ESP32 IP: ";
+          connected_string = connected_string + WiFi.localIP().toString();
+          SerialBT.println(connected_string);
+          Serial.println(connected_string);
+          bluetooth_disconnect = true;
+        } else { // try again
+          wifi_stage = LOGIN_FAILED;
+        }
+        break;
+
+      case LOGIN_FAILED:
+        SerialBT.println("Wi-Fi connection failed");
+        Serial.println("Wi-Fi connection failed");
+        delay(2000);
+        wifi_stage = SCAN_START;
+        break;
+    }
+    /////////
+
+
+    old_FMD = cur_FMD;
+    cur_FMD = digitalRead(FMD);
+    old_BMD = cur_BMD;
+    cur_BMD = digitalRead(BMD);
+    if (old_FMD == LOW && cur_FMD == HIGH){
+      //send notification to app for inside movement
+    }
+    if (old_BMD == LOW && cur_BMD == HIGH){
+      //send notification to app for outside movement
+    }
+
+
+    break;
+
+    case OPEN:
+    // Rotates the Motor counter-clockwise 
+    digitalWrite(IN1, MIN);  //turns on motor  (need to figure out pwm to contrl speed)
+    digitalWrite(IN2, MAX); 
+    OPENING:
+    if (SW1 == HIGH){ //motor runs until last switch cleared
+      goto OPENING;
+    }
+    digitalWrite(IN1, MAX); //stops motor
+    digitalWrite(IN2, MAX); 
+    SEEN:
+    delay(4000); //time before door will check to close (4s)
+    if (reader == tag){//reader still see tag?
+      goto SEEN; //return to delay and check for tag again
+    }
+    state = CLOSE;
+    break;
+
+    case CLOSE:
+    // Rotate the Motor clockwise 
+    digitalWrite(IN1, MAX); 
+    digitalWrite(IN2, 192); //turns on motor  need to figure out pwm to contrl speed
+    if (state == OPEN){break;} //if open btn or signal leave close state
+    delay(1000); // 1s
+    if (SW1 != HIGH || state == OPEN){ //obstruction in door 
+      digitalWrite(IN1, MAX); 
+      digitalWrite(IN2, MAX);
+      state = OPEN;
+      break;
+    }
+    delay(1000); 
+    if (SW2 != HIGH || state == OPEN){ //obstruction in door 
+      digitalWrite(IN1, MAX); 
+      digitalWrite(IN2, MAX);
+      state = OPEN;
+      break;
+    }
+    delay(1000); 
+    if (SW3 != HIGH || state == OPEN){ //obstruction in door 
+      digitalWrite(IN1, MAX); 
+      digitalWrite(IN2, MAX);
+      state = OPEN;
+      break;
+    }
+    delay(1000); 
+    if (SW4 != HIGH || state == OPEN){ //obstruction in door 
+      digitalWrite(IN1, MAX); 
+      digitalWrite(IN2, MAX);
+      state = OPEN;
+      break;
+    }
+    delay(1000); //time motor runs (1s)
+    digitalWrite(IN1, MAX); 
+    digitalWrite(IN2, MAX); //stops motor
+    //send door use notification?
+    state = IDLE;
+    break;
   }
-
-  switch (wifi_stage)
-  {
-    case SCAN_START:
-      SerialBT.println("Scanning Wi-Fi networks");
-      Serial.println("Scanning Wi-Fi networks");
-      scan_wifi_networks();
-      SerialBT.println("Please enter the number for your Wi-Fi");
-      wifi_stage = SCAN_COMPLETE;
-      break;
-
-    case SSID_ENTERED:
-      SerialBT.println("Please enter your Wi-Fi password");
-      Serial.println("Please enter your Wi-Fi password");
-      wifi_stage = WAIT_PASS;
-      break;
-
-    case PASS_ENTERED:
-      SerialBT.println("Please wait for Wi-Fi connection...");
-      Serial.println("Please wait for Wi_Fi connection...");
-      wifi_stage = WAIT_CONNECT;
-      preferences.putString("pref_ssid", client_wifi_ssid);
-      preferences.putString("pref_pass", client_wifi_password);
-      if (init_wifi()) { // Connected to WiFi
-        connected_string = "ESP32 IP: ";
-        connected_string = connected_string + WiFi.localIP().toString();
-        SerialBT.println(connected_string);
-        Serial.println(connected_string);
-        bluetooth_disconnect = true;
-      } else { // try again
-        wifi_stage = LOGIN_FAILED;
-      }
-      break;
-
-    case LOGIN_FAILED:
-      SerialBT.println("Wi-Fi connection failed");
-      Serial.println("Wi-Fi connection failed");
-      delay(2000);
-      wifi_stage = SCAN_START;
-      break;
-  }
-
-  // switch(state){
-  //   case IDLE:
-  //   if (state == OPEN){
-  //     break;  // switch to open state
-  //   }
-  //   old_FMD = cur_FMD;
-  //   cur_FMD = digitalRead(FMD);
-  //   old_BMD = cur_BMD;
-  //   cur_BMD = digitalRead(BMD);
-  //   if (old_FMD == LOW && cur_FMD == HIGH){
-  //     //send notification to app for inside movement
-  //   }
-  //   if (old_BMD == LOW && cur_BMD == HIGH){
-  //     //send notification to app for outside movement
-  //   }
-
-
-  //   break;
-
-  //   case OPEN:
-  //   // Rotates the Motor counter-clockwise 
-  //   digitalWrite(IN1, MIN);  //turns on motor  (need to figure out pwm to contrl speed)
-  //   digitalWrite(IN2, MAX); 
-  //   OPENING:
-  //   if (SW1 == HIGH){ //motor runs until last switch cleared
-  //     goto OPENING;
-  //   }
-  //   digitalWrite(IN1, MAX); //stops motor
-  //   digitalWrite(IN2, MAX); 
-  //   SEEN:
-  //   delay(4000); //time before door will check to close (4s)
-  //   if (reader == tag){//reader still see tag?
-  //     goto SEEN; //return to delay and check for tag again
-  //   }
-  //   state = CLOSE;
-  //   break;
-
-  //   case CLOSE:
-  //   // Rotate the Motor clockwise 
-  //   digitalWrite(IN1, MAX); 
-  //   digitalWrite(IN2, 192); //turns on motor  need to figure out pwm to contrl speed
-  //   if (state == OPEN){break;} //if open btn or signal leave close state
-  //   delay(1000); // 1s
-  //   if (SW1 != HIGH || state == OPEN){ //obstruction in door 
-  //     digitalWrite(IN1, MAX); 
-  //     digitalWrite(IN2, MAX);
-  //     state = OPEN;
-  //     break;
-  //   }
-  //   delay(1000); 
-  //   if (SW2 != HIGH || state == OPEN){ //obstruction in door 
-  //     digitalWrite(IN1, MAX); 
-  //     digitalWrite(IN2, MAX);
-  //     state = OPEN;
-  //     break;
-  //   }
-  //   delay(1000); 
-  //   if (SW3 != HIGH || state == OPEN){ //obstruction in door 
-  //     digitalWrite(IN1, MAX); 
-  //     digitalWrite(IN2, MAX);
-  //     state = OPEN;
-  //     break;
-  //   }
-  //   delay(1000); 
-  //   if (SW4 != HIGH || state == OPEN){ //obstruction in door 
-  //     digitalWrite(IN1, MAX); 
-  //     digitalWrite(IN2, MAX);
-  //     state = OPEN;
-  //     break;
-  //   }
-  //   delay(1000); //time motor runs (1s)
-  //   digitalWrite(IN1, MAX); 
-  //   digitalWrite(IN2, MAX); //stops motor
-  //   //send door use notification?
-  //   state = IDLE;
-  //   break;
-  // }
 
 }
 
-// void openbtnPressed(){ //open button pressed interrupt        
-//   if (state != OPEN){ // if already in open state do nothing else stop motor
-//   analogWrite(IN1, MAX); 
-//   analogWrite(IN2, MAX);
-//   state = OPEN;
-//   }
-// }
+void openbtnPressed(){ //open button pressed interrupt        
+  if (state != OPEN){ // if already in open state do nothing else stop motor
+  analogWrite(IN1, MAX); 
+  analogWrite(IN2, MAX);
+  state = OPEN;
+  }
+}
 
-// void openappPressed(){ //open signal from app interrupt         
-//   if (state != OPEN){ // if already in open state do nothing else stop motor
-//   digitalWrite(IN1, MAX); 
-//   digitalWrite(IN2, MAX);
-//   state = OPEN;
-//   }
-// }
+void openappPressed(){ //open signal from app interrupt         
+  if (state != OPEN){ // if already in open state do nothing else stop motor
+  digitalWrite(IN1, MAX); 
+  digitalWrite(IN2, MAX);
+  state = OPEN;
+  }
+}
