@@ -193,7 +193,7 @@ void loop() {
     }
 
     /////////
-    if (bluetooth_disconnect) //possibly move all into idle state
+    if (bluetooth_disconnect) 
     {
       disconnect_bluetooth();
     }
