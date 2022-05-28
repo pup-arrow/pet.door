@@ -1,0 +1,27 @@
+package com.king.activemqtest.util;
+
+import java.util.Random;
+
+/**
+ * 生成一个10位的随机数 用来拼接clientId
+ */
+
+public class BuildRandomNumber {
+    public static String createGUID() {
+        String result = "00000000";
+        try {
+            char[] content = { '0', '1', '2',
+                    '3', '4', '5', '6', '7', '8', '9' };
+            Random random = new Random();
+            char[] charArray = result.toCharArray();
+            for (int i = 0; i < charArray.length; i++) {
+                if (charArray[i] == '0') {
+                    charArray[i] = content[random.nextInt(10)];
+                }
+            }
+            result = String.valueOf(charArray);
+        } catch (Exception ex) {
+        }
+        return result;
+    }
+}

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:text="Main"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:background="#4682B4"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFFFF"
+        android:layout_marginTop="@dimen/d_50"
+        >
+
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/openButton"
+            android:layout_width="@dimen/d_100"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="9dp"
+            android:layout_marginTop="9dp"
+            android:layout_marginEnd="9dp"
+            android:layout_marginBottom="9dp"
+            android:background="@drawable/translucent_button"
+            android:padding="15dp"
+            android:text="open"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="24sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/d_1"
+            android:background="#1A000000"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="@dimen/d_12"
+            android:layout_marginBottom="@dimen/d_12"
+            android:layout_marginLeft="@dimen/d_12"
+            android:layout_marginStart="@dimen/d_12"
+            android:layout_marginRight="@dimen/d_12"
+            android:layout_marginEnd="@dimen/d_12">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    >
+                    <TextView
+                        android:id="@+id/startText"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:paddingTop="@dimen/d_8"
+                        android:paddingBottom="@dimen/d_8"
+                        android:textColor="#FF252525"
+                        android:gravity="center"
+                        android:textSize="@dimen/s_14"
+                        android:text="off"
+                        android:textStyle="bold"
+                        android:background="#FFF9F9F9"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:textColor="#FF252525"
+                        android:gravity="center"
+                        android:textSize="@dimen/s_14"
+                        android:text="~"
+                        android:layout_marginStart="@dimen/d_10"
+                        android:layout_marginEnd="@dimen/d_10"/>
+                    <TextView
+                        android:id="@+id/endText"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:paddingTop="@dimen/d_8"
+                        android:paddingBottom="@dimen/d_8"
+                        android:textColor="#FF252525"
+                        android:gravity="center"
+                        android:textSize="@dimen/s_14"
+                        android:text="off"
+                        android:textStyle="bold"
+                        android:background="#FFF9F9F9"/>
+
+            </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FF029CF5"
+            android:text="timer status:"
+            android:textSize="@dimen/s_14"
+            android:layout_marginTop="@dimen/d_12"
+            android:layout_marginBottom="@dimen/d_12"
+            android:layout_marginLeft="@dimen/d_12"
+            android:layout_marginStart="@dimen/d_12"
+            android:layout_marginRight="@dimen/d_12"
+            android:layout_marginEnd="@dimen/d_12"
+            android:layout_gravity="center_vertical"/>
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/controlSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:layout_marginStart="@dimen/d_9"
+            android:layout_marginLeft="@dimen/d_9"
+            android:layout_gravity="center_vertical"
+            android:thumb="@drawable/switch_thumb"
+            app:track="@drawable/switch_track"
+            android:enabled="false"
+            android:padding="@dimen/d_9"
+            />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/timeOnButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="9dp"
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="9dp"
+                android:background="@drawable/translucent_button"
+                android:padding="@dimen/d_9"
+                android:text="time on"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="24sp" />
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/timeOffButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="9dp"
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="9dp"
+                android:background="@drawable/translucent_button"
+                android:padding="@dimen/d_9"
+                android:text="time off"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="24sp" />
+
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/cleanButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="9dp"
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="9dp"
+                android:background="@drawable/translucent_button"
+                android:padding="@dimen/d_9"
+                android:text="clear"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="24sp"
+                />
+        </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/d_1"
+            android:background="#1A000000"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FF029CF5"
+            android:text="door status:"
+            android:textSize="@dimen/s_14"
+            android:layout_marginTop="@dimen/d_12"
+            android:layout_marginBottom="@dimen/d_12"
+            android:layout_marginLeft="@dimen/d_12"
+            android:layout_marginStart="@dimen/d_12"
+            android:layout_marginRight="@dimen/d_12"
+            android:layout_marginEnd="@dimen/d_12"/>
+
+        <TextView
+            android:id="@+id/doorTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/d_12"
+            android:layout_marginStart="@dimen/d_12"
+            android:layout_marginRight="@dimen/d_12"
+            android:layout_marginEnd="@dimen/d_12"
+            android:textSize="@dimen/s_20"
+            android:text="close"
+            android:layout_gravity="center"
+            />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/alarmTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FF0000"
+            android:text="Alarm"
+            android:layout_gravity="center"
+            android:textSize="@dimen/s_14"
+            android:layout_marginTop="@dimen/d_12"
+            android:layout_marginBottom="@dimen/d_12"
+            android:layout_marginLeft="@dimen/d_12"
+            android:layout_marginStart="@dimen/d_12"
+            android:layout_marginRight="@dimen/d_12"
+            android:layout_marginEnd="@dimen/d_12"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+
+</LinearLayout>

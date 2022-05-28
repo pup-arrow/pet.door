@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:text="Pet"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:background="#4682B4"/>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#FFFFFFFF">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/addButton"
+                android:layout_width="@dimen/d_100"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="9dp"
+                android:layout_marginTop="9dp"
+                android:layout_marginEnd="9dp"
+                android:layout_marginBottom="9dp"
+                android:background="@drawable/translucent_button"
+                android:padding="15dp"
+                android:text="add"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="24sp" />
+
+        </RelativeLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/d_1"
+            android:background="#1A000000"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginTop="@dimen/d_12"
+            android:layout_marginBottom="@dimen/d_12"
+            android:layout_marginLeft="@dimen/d_12"
+            android:layout_marginStart="@dimen/d_12"
+            android:layout_marginRight="@dimen/d_12"
+            android:layout_marginEnd="@dimen/d_12">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:orientation="vertical">
+
+
+                <include
+                    layout="@layout/line_horizontal"
+                    />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:background="#FFF9F9F9">
+                    <include layout="@layout/line_vertical"/>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:paddingTop="@dimen/d_8"
+                        android:paddingBottom="@dimen/d_8"
+                        android:textColor="#FF252525"
+                        android:gravity="center"
+                        android:textSize="@dimen/s_14"
+                        android:text="Name"
+                        android:textStyle="bold"/>
+                    <include layout="@layout/line_vertical"/>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="2"
+                        android:paddingTop="@dimen/d_8"
+                        android:paddingBottom="@dimen/d_8"
+                        android:textColor="#FF252525"
+                        android:gravity="center"
+                        android:textSize="@dimen/s_14"
+                        android:text="PetId"
+                        android:textStyle="bold"/>
+                    <include layout="@layout/line_vertical"/>
+                </LinearLayout>
+                <include
+                    layout="@layout/line_horizontal"
+                    />
+            </LinearLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/personRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager">
+
+            </androidx.recyclerview.widget.RecyclerView>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
