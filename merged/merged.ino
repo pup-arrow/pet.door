@@ -15,12 +15,10 @@
 #define PWR_LED 25  //PWR_LED connected to (D6)
 #define FMD 15 //front motion detechtor (D5)
 // #define BMD 14 //back motion detector (D4)
-#define ON 1
-#define OFF 0
 #define MAX 255
 #define MIN 0
 
-int RFID_PWR = ON; 
+int RFID_PWR = HIGH; 
 int old_FMD;  
 int old_BMD;
 int cur_FMD = HIGH;
@@ -28,8 +26,8 @@ int cur_BMD = HIGH;
 
 // need to research how to permanently store tag #s and read RFID #s
 
-int reader = OFF;
-int tag = OFF;
+int reader = LOW;
+int tag = LOW;
 
 // code from internet
 String ssids_array[50];
