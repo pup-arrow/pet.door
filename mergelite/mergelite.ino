@@ -22,13 +22,13 @@
 #define SCK_PIN   18 
 
 // Definitions Arduino pins connected to input H Bridge 
-#define IN1 27 //motor pwm pin values 0-255 (D11)
-#define IN2 4 //motor pwm pin vlues 0-255 (D10)
+#define IN2 27 //motor pwm pin values 0-255 (D11)
+#define IN1 4 //motor pwm pin vlues 0-255 (D10)
 #define SW1 26 //top switch (D12)
 #define SW2 2 //second to top switch (D8) 
 #define SW3 5 // second to bottom switch (D7)
 #define SW4 15 // bottom switch (D5)
-#define OPEN_BTN 13 //OPEN_BTN connected to pin 2 external interrupt (D2)
+// #define OPEN_BTN 13 //OPEN_BTN connected to pin 2 external interrupt (D2)
 // #define RFID_PWR 12 //OPEN_APP connected to pin 3 external interrupt (D3)
 #define PWR_LED 25  //PWR_LED connected to (D6)
 #define FMD 36 //front motion detechtor (S0)
@@ -315,14 +315,18 @@ void setup() {
   // pinMode(GREENLED,OUTPUT);//GREEN RFID read?
   pinMode(FMD, INPUT);
   // pinMode(RFCHPin,INPUT);//RFID
+  pinMode(SW1, INPUT); 
+  pinMode(SW2, INPUT); 
+  pinMode(SW3, INPUT); 
+  pinMode(SW4, INPUT); 
   pinMode(IN1, OUTPUT); 
   pinMode(IN2, OUTPUT); 
-  pinMode(OPEN_BTN, INPUT);
+  // pinMode(OPEN_BTN, INPUT);
   pinMode(PWR_LED, OUTPUT);
   digitalWrite(PWR_LED, HIGH);
   analogWrite(IN1, MIN); //stops not energized
   analogWrite(IN2, MIN); 
-  attachInterrupt(digitalPinToInterrupt(OPEN_BTN),openbtnPressed,RISING); 
+  // attachInterrupt(digitalPinToInterrupt(OPEN_BTN),openbtnPressed,RISING); 
   // attachInterrupt(digitalPinToInterrupt(RFID_PWR),RFIDbtnPressed,RISING); 
   preferences.begin("pet_id", false); // allows for saving id #s to permanent memory
   Serial.begin(115200);
@@ -332,17 +336,18 @@ void setup() {
   setup_wifi();
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-  state = OPEN;
 }
 
 void loop() {
   switch(state){
     case IDLE:
+     Serial.println("IDLE ");
     if (state == OPEN){
       break;  // switch to open state
     }
     if (stall==1){
      client.publish("outTopic","{\"SystemStart\":\"1\"}");
+     stall++;
     }
     else if(stall==0){
      delay(5000);
@@ -414,14 +419,15 @@ void loop() {
     }
     break;
   case OPEN:
+    Serial.println("OPEN");
     // Rotates the Motor counter-clockwise 
     analogWrite(IN1, MIN);  //turns on motor  (need to figure out pwm to contrl speed)
     analogWrite(IN2, MAX); 
     OPENING:
-    if (SW1 == LOW){ //motor runs until last switch cleared
+    if (digitalRead(SW1) == LOW){ //motor runs until last switch cleared
       goto OPENING;
     }
-    delay(1000);
+    delay(3000);
     analogWrite(IN1, MAX); //stops motor
     analogWrite(IN2, MAX); 
     // SEEN:
@@ -434,53 +440,55 @@ void loop() {
 
     case CLOSE:
     // Rotate the Motor clockwise 
-    analogWrite(IN1, MIN); 
+    analogWrite(IN1, 100); 
     analogWrite(IN2, MIN); //turns on motor  need to figure out pwm to contrl speed
     if (state == OPEN){break;} //if open btn or signal leave close state
-    delay(1000); // 1s
-    if (SW1 != LOW || state == OPEN){ //obstruction in door 
+    delay(2000); // 1s
+    Serial.println("close1");
+    if (digitalRead(SW1) != LOW || state == OPEN){ //obstruction in door 
       analogWrite(IN1, MAX); 
       analogWrite(IN2, MAX);
       state = OPEN;
       break;
     }
-    delay(1000); 
-    if (SW2 != LOW || state == OPEN){ //obstruction in door 
+    delay(2000); 
+    Serial.println("close 2");
+    if (digitalRead(SW2) != LOW || state == OPEN){ //obstruction in door 
       analogWrite(IN1, MAX); 
       analogWrite(IN2, MAX);
       state = OPEN;
       break;
     }
-    delay(1000); 
-    if (SW3 != LOW || state == OPEN){ //obstruction in door 
+    delay(2000); 
+    if (digitalRead(SW3) != LOW || state == OPEN){ //obstruction in door 
       analogWrite(IN1, MAX); 
       analogWrite(IN2, MAX);
       state = OPEN;
       break;
     }
-    delay(1000); 
-    if (SW4 != LOW || state == OPEN){ //obstruction in door 
+    delay(2000); 
+    if (digitalRead(SW4) != LOW || state == OPEN){ //obstruction in door 
       analogWrite(IN1, MAX); 
       analogWrite(IN2, MAX);
       state = OPEN;
       break;
     }
-    delay(1000); //time motor runs (1s)
-    analogWrite(IN1, MAX); 
-    analogWrite(IN2, MAX); //stops motor
+    delay(2000); //time motor runs (2.5s)
+    analogWrite(IN1, MIN); 
+    analogWrite(IN2, MIN); //stops motor
     //send door use notification?
     state = IDLE;
     break;
   }
 }
 
-void openbtnPressed(){ //open button pressed interrupt        
-  if (state != OPEN){ // if already in open state do nothing, else stop motor
-  analogWrite(IN1, MAX); 
-  analogWrite(IN2, MAX);
-  state = OPEN;
-  }
-}
+// void openbtnPressed(){ //open button pressed interrupt        
+//   if (state != OPEN){ // if already in open state do nothing, else stop motor
+//   analogWrite(IN1, MAX); 
+//   analogWrite(IN2, MAX);
+//   state = OPEN;
+//   }
+// }
 
 // void RFIDbtnPressed(){ //open signal from app interrupt         
 //   if (state != OPEN){ // if already in open state do nothing, else stop motor
