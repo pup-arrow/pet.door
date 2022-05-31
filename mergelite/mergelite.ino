@@ -28,7 +28,7 @@
 #define SW2 2 //second to top switch (D8) 
 #define SW3 5 // second to bottom switch (D7)
 #define SW4 15 // bottom switch (D5)
-// #define OPEN_BTN 13 //OPEN_BTN connected to pin 2 external interrupt (D2)
+#define OPEN_BTN 13 //OPEN_BTN connected to pin 2 external interrupt (D2)
 // #define RFID_PWR 12 //OPEN_APP connected to pin 3 external interrupt (D3)
 #define PWR_LED 25  //PWR_LED connected to (D6)
 #define FMD 36 //front motion detechtor (S0)
@@ -321,12 +321,12 @@ void setup() {
   pinMode(SW4, INPUT); 
   pinMode(IN1, OUTPUT); 
   pinMode(IN2, OUTPUT); 
-  // pinMode(OPEN_BTN, INPUT);
+  pinMode(OPEN_BTN, INPUT);
   pinMode(PWR_LED, OUTPUT);
   digitalWrite(PWR_LED, HIGH);
   analogWrite(IN1, MIN); //stops not energized
   analogWrite(IN2, MIN); 
-  // attachInterrupt(digitalPinToInterrupt(OPEN_BTN),openbtnPressed,RISING); 
+  attachInterrupt(digitalPinToInterrupt(OPEN_BTN),openbtnPressed,CHANGE); 
   // attachInterrupt(digitalPinToInterrupt(RFID_PWR),RFIDbtnPressed,RISING); 
   preferences.begin("pet_id", false); // allows for saving id #s to permanent memory
   Serial.begin(115200);
@@ -482,13 +482,13 @@ void loop() {
   }
 }
 
-// void openbtnPressed(){ //open button pressed interrupt        
-//   if (state != OPEN){ // if already in open state do nothing, else stop motor
-//   analogWrite(IN1, MAX); 
-//   analogWrite(IN2, MAX);
-//   state = OPEN;
-//   }
-// }
+void openbtnPressed(){ //open button pressed interrupt        
+  if (state != OPEN){ // if already in open state do nothing, else stop motor
+  analogWrite(IN1, MAX); 
+  analogWrite(IN2, MAX);
+  state = OPEN;
+  }
+}
 
 // void RFIDbtnPressed(){ //open signal from app interrupt         
 //   if (state != OPEN){ // if already in open state do nothing, else stop motor
