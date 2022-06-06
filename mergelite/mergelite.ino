@@ -3,12 +3,6 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>
-// #define Infrare1Pin 25
-// #define Infrare2Pin 5
-// #define RFCHPin 27
-// #define REDLED 15
-// #define WHITELED 14
-// #define GREENLED 12
 
 // #define IN4 0
 // #define IN3 2
@@ -39,11 +33,10 @@
 int old_FMD;  
 int cur_FMD = HIGH;
 
-// need to research how to permanently store tag #s and read RFID #s
-
-// int reader = LOW;
-// int tag = LOW;
+const char* pet_1 = "";
+const char* pet_2 = "";
 int stall = 0;
+
 
 enum states {
   IDLE,
@@ -52,7 +45,7 @@ enum states {
 };
 
 states state;  //Global variable to store which state we're in
-// internet code
+
 
 Preferences preferences;
 //
@@ -307,12 +300,32 @@ void readRFID()
   mfrc522.PCD_StopCrypto1();
   }
 
+void add_pet(unsigned int tag_ID, int pet_num) {
+  switch (pet_num){
+    case 1:
+      preferences.putString("pet_1",String(tag_ID));
+      break;
+
+    case 2:
+      preferences.putString("pet_2",String(tag_ID));
+      break;
+  }
+}
+
+void remove_pet(unsigned int tag_ID, int pet_num) {
+  switch (pet_num){
+    case 1:
+      preferences.putString("pet_1", "";
+      break;
+
+    case 2:
+      preferences.putString("pet_2", "");
+      break;
+  }
+}
 
 void setup() {
   state = IDLE;  //initate in the idle state
-  // pinMode(REDLED,OUTPUT);//RED Error?
-  // pinMode(WHITELED,OUTPUT);//WHITE Motion sensor?
-  // pinMode(GREENLED,OUTPUT);//GREEN RFID read?
   pinMode(FMD, INPUT);
   // pinMode(RFCHPin,INPUT);//RFID
   pinMode(SW1, INPUT); 
@@ -357,61 +370,7 @@ void loop() {
       reconnect();
     }
     client.loop();
-  //   if(ReTimerStatus==1)
-  //   {
-  //   // int Infrare1num=digitalRead(Infrare1Pin);
-  //   // int Infrare2num=digitalRead(Infrare2Pin);
-  //   int RFIDCHnum=digitalRead(RFCHPin);
-  //   if(RFIDCHnum==1)
-  //   {
-  //     snprintf (msg, MSG_BUFFER_SIZE, "{\"DoorStatus\":\"0\"}"); // 0 means door closed
-  //     Serial.print("Publish message: ");
-  //     Serial.println(msg);
-  //     client.publish("outTopic", msg);
-  //   }
 
-  //   StrRFID="11111111111111111111111111111111";
-  //   if(Infrare2num)
-  //   {
-  //     digitalWrite(GREENLED,HIGH);
-  //     delay(1500);
-  //     digitalWrite(GREENLED,LOW);
-  //   }
-  // if(Infrare1num)
-  //   {
-  //     digitalWrite(WHITELED,HIGH);
-  //     delay(1500);
-  //     digitalWrite(WHITELED,LOW);
-  //     readRFID();
-  //     int RFflag=0;
-  //     for(int i=0;i<100;i++)
-  //       if(RFIDList[i]==StrRFID)
-  //         RFflag=1;
-  //     if(RFflag)
-  //     {
-  //       String StrRFIDtemp="{\"RFID\":\""+StrRFID+"\",\"DoorS\":\"1\"}";
-  //       snprintf (msg, MSG_BUFFER_SIZE,StrRFIDtemp.c_str());
-  //       Serial.print("Publish message: ");
-  //       Serial.println(msg);
-  //       client.publish("outTopic", msg);
-  //       state = OPEN;
-  //       break;
-  //     }
-  //     else
-  //     {
-  //       if(StrRFID!="11111111111111111111111111111111")
-  //       {
-  //         Serial.println(RFIDList[0]);
-  //         snprintf (msg, MSG_BUFFER_SIZE, "{\"Alarm\":\"1\"}");
-  //         Serial.print("Publish message: ");
-  //         Serial.println(msg);
-  //         client.publish("outTopic", msg);
-  //         digitalWrite(REDLED,HIGH);
-  //         delay(1500);
-  //         digitalWrite(REDLED,LOW);
-  //       } 
-  //     }
-  //   }
     old_FMD = cur_FMD;
     cur_FMD = digitalRead(FMD);
     if (old_FMD == LOW && cur_FMD == HIGH){
