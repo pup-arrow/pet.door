@@ -112,10 +112,11 @@ void parmPass(JsonVariant parm){ //Json means MQTT parameter
     Serial.println(msg);
     client.publish("outTopic", msg);
   }
-  else  if (parm.containsKey(ReCntrl[1])){
+  else  if (parm.containsKey(ReCntrl[1])){ //timer on = 1, door working, timer off = 0
     ReTimerStatus=parm[ReCntrl[1]];
     Serial.println("ReTimerStatus");
-    Serial.println(ReTimerStatus);
+    Serial.println(ReTimerStatus); 
+
   }
   else  if (parm.containsKey(ReCntrl[2])){ // Open if pet ID match RFID
     RECERFID=parm[ReCntrl[2]];
@@ -168,8 +169,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void reconnect() {
-  // Loop until we're reconnected
-  while (!client.connected()) {
+  if (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     String clientId = "Device09";
@@ -181,9 +181,9 @@ void reconnect() {
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
+      Serial.println(" try again");
       // Wait 5 seconds before retrying
-      delay(5000);
+      // delay(5000);
     }
   }
 }
@@ -340,7 +340,6 @@ void setup() {
   analogWrite(IN1, MIN); //stops not energized
   analogWrite(IN2, MIN); 
   attachInterrupt(digitalPinToInterrupt(OPEN_BTN),openbtnPressed,CHANGE); 
-  // attachInterrupt(digitalPinToInterrupt(RFID_PWR),RFIDbtnPressed,RISING); 
   preferences.begin("pet_id", false); // allows for saving id #s to permanent memory
   Serial.begin(115200);
   SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN); // Init SPI bus
@@ -448,11 +447,3 @@ void openbtnPressed(){ //open button pressed interrupt
   state = OPEN;
   }
 }
-
-// void RFIDbtnPressed(){ //open signal from app interrupt         
-//   if (state != OPEN){ // if already in open state do nothing, else stop motor
-//   digitalWrite(IN1, MAX); 
-//   digitalWrite(IN2, MAX);
-//   state = OPEN;
-//   }
-// }
