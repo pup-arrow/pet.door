@@ -24,7 +24,8 @@
 #define SW4 15 // bottom switch (D5)
 #define OPEN_BTN 13 //OPEN_BTN connected to pin 2 external interrupt (D2)
 // #define RFID_PWR 12 //OPEN_APP connected to pin 3 external interrupt (D3)
-#define PWR_LED 25  //PWR_LED connected to (D6)
+#define PWR_LED 34  //PWR_LED connected to (S4)
+#define TIMER_LED 35  //PWR_LED connected to (S5)
 #define FMD 36 //front motion detechtor (S0)
 #define MAX 255
 #define MIN 0
@@ -215,6 +216,7 @@ String RFIDHEX[35];
       Serial.println(StrRFID);
       count=0;
       // break;
+      delay(5000);
     }
   // delay(100); 
 }
@@ -222,7 +224,7 @@ String RFIDHEX[35];
 void compare_pet(){
   String temp_pet1 = preferences.getString("pet_1");
   String temp_pet2 = preferences.getString("pet_2");
-  if (StrRFID.equals(temp_pet1) || StrRFID.equals(temp_pet2)){
+  if ((StrRFID.equals(temp_pet1) && StrRFID != "")|| (StrRFID.equals(temp_pet2) && StrRFID != "")){
     String StrRFIDtemp="{\"RFID\":\""+StrRFID+"\",\"DoorS\":\"1\"}";
     snprintf (msg, MSG_BUFFER_SIZE,StrRFIDtemp.c_str());
     Serial.print("Publish message: ");
@@ -245,6 +247,7 @@ void setup() {
   pinMode(IN2, OUTPUT); 
   pinMode(OPEN_BTN, INPUT);
   pinMode(PWR_LED, OUTPUT);
+  pinMode(TIMER_LED, OUTPUT);
   digitalWrite(PWR_LED, HIGH);
   analogWrite(IN1, MIN); //stops not energized
   analogWrite(IN2, MIN); 
@@ -289,8 +292,12 @@ void loop() {
       client.publish("outTopic", msg);
     }
     if (ReTimerStatus == 1){
+      digitalWrite(TIMER_LED, HIGH);
       readRFID();
       compare_pet();
+    }
+    else{
+      digitalWrite(TIMER_LED, LOW);
     }
     break;
   case OPEN:
@@ -309,7 +316,7 @@ void loop() {
     delay(4000); //time before door will check to close (4s)
     //reader still see tag?
     readRFID();
-    if (StrRFID == pet_1 || StrRFID == pet_2){
+    if ((StrRFID.equals(preferences.getString("pet_1")) && StrRFID != "")|| (StrRFID.equals(preferences.getString("pet_2")) && StrRFID != "")){
       goto SEEN; //return to delay and check for tag again
     }
     state = CLOSE;
