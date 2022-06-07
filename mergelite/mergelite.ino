@@ -118,15 +118,15 @@ void parmPass(JsonVariant parm){ //Json means MQTT parameter
     Serial.println(ReTimerStatus); 
 
   }
-  else  if (parm.containsKey(ReCntrl[2])){ // Open if pet ID match RFID
+  else  if (parm.containsKey(ReCntrl[2])){ // Add pet id #
     RECERFID=parm[ReCntrl[2]];
-    RFIDList[RFIDCount++]=RECERFID;
+    RFIDList[RFIDCount++]=RECERFID; //adding pet id # into list
     Serial.println("RFIDList:");
     for(int i=0;i<RFIDCount;i++){
       Serial.println(RFIDList[i]);
     }
   }
-  else  if (parm.containsKey(ReCntrl[3])){ //Pet ID
+  else  if (parm.containsKey(ReCntrl[3])){ //remove pet ID
     RECERFID=parm[ReCntrl[3]];
     RFIDCount--;
     for(int i=0;i<100;i++){
