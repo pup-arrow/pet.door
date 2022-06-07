@@ -37,6 +37,7 @@ const char* pet_1 = "";
 const char* pet_2 = "";
 int stall = 0;
 String StrRFID = "";
+String ID_pet;
 
 
 enum states {
@@ -77,6 +78,8 @@ int ReTimerStatus=1;
 int RFIDCount=0;
 const char *RECERFID = NULL;  
 bool door_open_flag; 
+HardwareSerial mySerial(1);
+unsigned char incomingByte;
 
 void setup_wifi() { //Bluetooth to WiFi code too large to hardcoding Wifi setup
   delay(10);
@@ -120,40 +123,28 @@ void parmPass(JsonVariant parm){ //Json means MQTT parameter
   }
   else  if (parm.containsKey(ReCntrl[2])){ // Add pet id #, limit is 2 pets
     RECERFID=parm[ReCntrl[2]];
-    RFIDCount = 0;
-    String RFIDList[35];
-    RFIDList[RFIDCount++]=RECERFID; //adding pet id # into list
-    // Serial.println("RFIDList:");
-    String ID_pet[(RFIDCount+1)];
-    for(int i=0;i<RFIDCount;i++){
-      ID_pet[i] = RFIDList[i]);
+    //adding pet id # into list
+    ID_pet = RECERFID;
+    String temp_pet1 = preferences.getString("pet_1");
+    String temp_pet2 = preferences.getString("pet_2");
+    if (temp_pet1.equals("")){
+      preferences.putString("pet_1", ID_pet);
     }
-    if (pet_1 == ""){
-      add_pet(ID_pet, 1);
-    }
-    else if (pet_2 == ""){
-      add_pet(ID_pet, 2);
+    else if (temp_pet2.equals("")){
+      preferences.putString("pet_2", ID_pet);
     }
   }
   else  if (parm.containsKey(ReCntrl[3])){ //remove pet ID
     RECERFID=parm[ReCntrl[3]];
-    RFIDCount = 0;
-    String RFIDList[35];
-    RFIDList[RFIDCount++]=RECERFID; //adding pet id # into list
-    // Serial.println("RFIDList:");
-    String ID_pet[(RFIDCount+1)];
-    for(int i=0;i<RFIDCount;i++){
-      ID_pet[i] = RFIDList[i]);
+    ID_pet = RECERFID;
+    String temp_pet1 = preferences.getString("pet_1");
+    String temp_pet2 = preferences.getString("pet_2");
+    if (temp_pet1.equals(ID_pet)){
+      preferences.putString("pet_1", "");
     }
-    if (pet_1 == String(ID_pet)){
-      remove_pet(ID_pet, 1);
+    else if (temp_pet2.equals(ID_pet)){
+      preferences.putString("pet_2", "");
     }
-    else if (pet_2 == String(ID_pet)){
-      remove_pet(ID_pet, 2);
-    }
-    Serial.println("RFIDList:");
-    for(int i=0;i<RFIDCount;i++)
-    Serial.println(RFIDList[i]);
   }   
 }
 
@@ -190,7 +181,8 @@ void reconnect() {
       Serial.println("connected");
     // Once connected, publish an announcement...
       client.subscribe("inTopic");
-    } else {
+    } 
+    else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again");
@@ -222,37 +214,15 @@ String RFIDHEX[35];
       Serial.println("Identification successful2:");
       Serial.println(StrRFID);
       count=0;
-      break;
+      // break;
     }
   // delay(100); 
 }
 
-void add_pet(unsigned int tag_ID, int pet_num) {
-  switch (pet_num){
-    case 1:
-      preferences.putString("pet_1",String(tag_ID));
-      break;
-
-    case 2:
-      preferences.putString("pet_2",String(tag_ID));
-      break;
-  }
-}
-
-void remove_pet(unsigned int tag_ID, int pet_num) {
-  switch (pet_num){
-    case 1:
-      preferences.putString("pet_1", "");
-      break;
-
-    case 2:
-      preferences.putString("pet_2", "");
-      break;
-  }
-}
-
 void compare_pet(){
-  if (StrRFID == pet_1 || StrRFID == pet_2){
+  String temp_pet1 = preferences.getString("pet_1");
+  String temp_pet2 = preferences.getString("pet_2");
+  if (StrRFID.equals(temp_pet1) || StrRFID.equals(temp_pet2)){
     String StrRFIDtemp="{\"RFID\":\""+StrRFID+"\",\"DoorS\":\"1\"}";
     snprintf (msg, MSG_BUFFER_SIZE,StrRFIDtemp.c_str());
     Serial.print("Publish message: ");
