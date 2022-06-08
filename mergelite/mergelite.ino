@@ -252,6 +252,7 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(OPEN_BTN),openbtnPressed,CHANGE); 
   preferences.begin("pet_id", false); // allows for saving id #s to permanent memory
   Serial.begin(115200);
+  mySerial.begin(115200,SERIAL_8N1,32,33);// initialize the  hardwareserial pin32,33
   SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN); // Init SPI bus
   mfrc522.PCD_Init();                    // Init MFRC522 card
   Serial.println(F("Read personal data on a MIFARE PICC:"));    //shows in serial that it is ready to read
