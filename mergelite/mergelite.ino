@@ -4,8 +4,6 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
 
-// #define IN4 0
-// #define IN3 2
 #include <SPI.h>
 #include <MFRC522.h>
 
