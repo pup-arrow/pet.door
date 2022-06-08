@@ -4,25 +4,22 @@
 
 
 // Definitions Arduino pins connected to input H Bridge 
-#define IN1 0 //motor pwm pin values 0-255 (D9)
-#define IN2 4 //motor pwm pin vlues 0-255 (D10)
+#define IN2 27 //motor pwm pin values 0-255 (D11)
+#define IN1 4 //motor pwm pin vlues 0-255 (D10)
 #define SW1 26 //top switch (D12)
-#define SW2 27 //second to top switch (D11)
-#define SW3 2 // second to bottom switch (D8)
-#define SW4 5 // bottom switch (D7)
+#define SW2 2 //second to top switch (D8) 
+#define SW3 5 // second to bottom switch (D7)
+#define SW4 15 // bottom switch (D5)
 #define OPEN_BTN 13 //OPEN_BTN connected to pin 2 external interrupt (D2)
-// #define OPEN_APP 3 //OPEN_APP connected to pin 3 external interrupt
-#define PWR_LED 25  //PWR_LED connected to (D6)
-#define FMD 15 //front motion detechtor (D5)
-// #define BMD 14 //back motion detector (D4)
+// #define RFID_PWR 12 //OPEN_APP connected to pin 3 external interrupt (D3)
+#define PWR_LED 34  //PWR_LED connected to (S4)
+#define TIMER_LED 35  //PWR_LED connected to (S5)
+#define FMD 36 //front motion detechtor (S0)
 #define MAX 255
 #define MIN 0
 
-int RFID_PWR = HIGH; 
 int old_FMD;  
-int old_BMD;
 int cur_FMD = HIGH;
-int cur_BMD = HIGH; 
 
 // need to research how to permanently store tag #s and read RFID #s
 
@@ -68,11 +65,10 @@ void setup() {
   pinMode(OPEN_BTN, INPUT);
   // pinMode(OPEN_APP, INPUT);
   pinMode(FMD, INPUT);
-  // pinMode(BMD, INPUT);
   pinMode(PWR_LED, OUTPUT);
   digitalWrite(PWR_LED, HIGH); 
-  analogWrite(IN1, MAX); //stops motor
-  analogWrite(IN2, MAX);
+  analogWrite(IN1, MIN); //stops motor
+  analogWrite(IN2, MIN);
   attachInterrupt(digitalPinToInterrupt(OPEN_BTN),openbtnPressed,RISING); 
   // attachInterrupt(digitalPinToInterrupt(3),openappPressed,RISING); 
   preferences.begin("pet_id", false); // allows for saving id #s to permanent memory
@@ -243,15 +239,10 @@ void loop() {
 
     old_FMD = cur_FMD;
     cur_FMD = digitalRead(FMD);
-    // old_BMD = cur_BMD;
-    // cur_BMD = digitalRead(BMD);
     if (old_FMD == LOW && cur_FMD == HIGH){
       //send notification to app for inside movement
 
     }
-    // if (old_BMD == LOW && cur_BMD == HIGH){
-    //   //send notification to app for outside movement
-    // }
 
 
     break;

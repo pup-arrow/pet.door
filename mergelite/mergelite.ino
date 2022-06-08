@@ -4,8 +4,6 @@
 #include <ArduinoJson.h>
 #include <Preferences.h>
 
-// #define IN4 0
-// #define IN3 2
 #include <SPI.h>
 #include <MFRC522.h>
 
@@ -24,7 +22,8 @@
 #define SW4 15 // bottom switch (D5)
 #define OPEN_BTN 13 //OPEN_BTN connected to pin 2 external interrupt (D2)
 // #define RFID_PWR 12 //OPEN_APP connected to pin 3 external interrupt (D3)
-#define PWR_LED 25  //PWR_LED connected to (D6)
+#define PWR_LED 34  //PWR_LED connected to (S4)
+#define TIMER_LED 35  //PWR_LED connected to (S5)
 #define FMD 36 //front motion detechtor (S0)
 #define MAX 255
 #define MIN 0
@@ -36,6 +35,8 @@ int cur_FMD = HIGH;
 const char* pet_1 = "";
 const char* pet_2 = "";
 int stall = 0;
+String StrRFID = "";
+String ID_pet;
 
 
 enum states {
@@ -69,14 +70,15 @@ int value = 0;
 
 String DeviceName[10]={"RFID","DoorStatus","Infrare1","Infrare2","Alarm"};
 String DeviceStatus[10]={"0","0","0","0","0"};
-String RFIDList[100];
+// String RFIDList[100];
 String ReCntrl[10]={"OpenDoor","TimerStatus","RFIDADD","RFIDDELE"};
-String StrRFID;
 int ReOpenDoor=0;
 int ReTimerStatus=1;
 int RFIDCount=0;
 const char *RECERFID = NULL;  
 bool door_open_flag; 
+HardwareSerial mySerial(1);
+unsigned char incomingByte;
 
 void setup_wifi() { //Bluetooth to WiFi code too large to hardcoding Wifi setup
   delay(10);
@@ -118,30 +120,30 @@ void parmPass(JsonVariant parm){ //Json means MQTT parameter
     Serial.println(ReTimerStatus); 
 
   }
-  else  if (parm.containsKey(ReCntrl[2])){ // Add pet id #
+  else  if (parm.containsKey(ReCntrl[2])){ // Add pet id #, limit is 2 pets
     RECERFID=parm[ReCntrl[2]];
-    RFIDList[RFIDCount++]=RECERFID; //adding pet id # into list
-    Serial.println("RFIDList:");
-    for(int i=0;i<RFIDCount;i++){
-      Serial.println(RFIDList[i]);
+    //adding pet id # into list
+    ID_pet = RECERFID;
+    String temp_pet1 = preferences.getString("pet_1");
+    String temp_pet2 = preferences.getString("pet_2");
+    if (temp_pet1.equals("")){
+      preferences.putString("pet_1", ID_pet);
+    }
+    else if (temp_pet2.equals("")){
+      preferences.putString("pet_2", ID_pet);
     }
   }
   else  if (parm.containsKey(ReCntrl[3])){ //remove pet ID
     RECERFID=parm[ReCntrl[3]];
-    RFIDCount--;
-    for(int i=0;i<100;i++){
-      if(RFIDList[i]==RECERFID){
-        if(i==99){
-          RFIDList[i]="-1";
-        }
-        for(int j=i;j<100-1;j++){
-          RFIDList[j]=RFIDList[j+1];
-        }
-      }
+    ID_pet = RECERFID;
+    String temp_pet1 = preferences.getString("pet_1");
+    String temp_pet2 = preferences.getString("pet_2");
+    if (temp_pet1.equals(ID_pet)){
+      preferences.putString("pet_1", "");
     }
-    Serial.println("RFIDList:");
-    for(int i=0;i<RFIDCount;i++)
-    Serial.println(RFIDList[i]);
+    else if (temp_pet2.equals(ID_pet)){
+      preferences.putString("pet_2", "");
+    }
   }   
 }
 
@@ -178,7 +180,8 @@ void reconnect() {
       Serial.println("connected");
     // Once connected, publish an announcement...
       client.subscribe("inTopic");
-    } else {
+    } 
+    else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again");
@@ -188,141 +191,47 @@ void reconnect() {
   }
 }
 
-void readRFID()
-{
-  // Prepare key - all keys are set to FFFFFFFFFFFFh at chip delivery from the factory.
-  MFRC522::MIFARE_Key key;
-  for (byte i = 0; i < 6; i++) key.keyByte[i] = 0xFF;
+void readRFID() {
+delay(100); 
+StrRFID="";
+String RFIDHEX[35];
 
-  //some variables we need
-  byte block;
-  byte len;
-  MFRC522::StatusCode status;
+  byte message[] = {0xbb,0x00,0x39,0x00,0x09,0x00,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x06,0x4a,0x7E};
+  mySerial.write(message, sizeof(message));
+  int count=0;
 
-  //-------------------------------------------
-
-  // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
-  if ( ! mfrc522.PICC_IsNewCardPresent()) {
-    return;
+  while (mySerial.available() > 0) {
+    incomingByte = mySerial.read();
+    RFIDHEX[count++]=String(incomingByte,HEX);
+    if(RFIDHEX[count-1].length()==1)
+    RFIDHEX[count-1]="0"+RFIDHEX[count-1];
   }
-
-  // Select one of the cards
-  if ( ! mfrc522.PICC_ReadCardSerial()) {
-    return;
-  }
-
-  Serial.println(F("**Card Detected:**"));
-
-  //-------------------------------------------
-
-  mfrc522.PICC_DumpDetailsToSerial(&(mfrc522.uid)); //dump some details about the card
-
-  //mfrc522.PICC_DumpToSerial(&(mfrc522.uid));      //uncomment this to see all blocks in hex
-
-  //-------------------------------------------
-  Serial.println("TEST:");
-  byte *p;
-  int rfidbit[35];
-  int k=0;
-
-  StrRFID="";
-  p=mfrc522.uid.uidByte;
-  for (byte i = 0; i < mfrc522.uid.size; i++) {
-      for(int j=7;j>=0;j--)
-      {
-         rfidbit[k++]=bitRead(p[i], j);
-         Serial.print(rfidbit[k-1]);
-         StrRFID+=String(rfidbit[k-1]);
-        }
-  }
-
-  Serial.println();
-  Serial.println(StrRFID);
-  Serial.print(F("Name: "));
-
-  byte buffer1[18];
-
-  block = 4;
-  len = 18;
-
-  //------------------------------------------- GET FIRST NAME
-  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, 4, &key, &(mfrc522.uid)); //line 834 of MFRC522.cpp file
-  if (status != MFRC522::STATUS_OK) {
-    Serial.print(F("Authentication failed: "));
-    Serial.println(mfrc522.GetStatusCodeName(status));
-    return;
-  }
-
-  status = mfrc522.MIFARE_Read(block, buffer1, &len);
-  if (status != MFRC522::STATUS_OK) {
-    Serial.print(F("Reading failed: "));
-    Serial.println(mfrc522.GetStatusCodeName(status));
-    return;
-  }
-
-  for (uint8_t i = 0; i < 16; i++)
-  {
-    if (buffer1[i] != 32)
-    {
-      Serial.write(buffer1[i]);
+  if(count==34){
+      for(int i=20;i<=31;i++){
+        StrRFID+=RFIDHEX[i];
+      }
+      Serial.println("Identification successful2:");
+      Serial.println(StrRFID);
+      count=0;
+      // break;
+      delay(5000);
     }
-  }
-  Serial.print(" ");
+  // delay(100); 
+}
 
-
-  byte buffer2[18];
-  block = 1;
-
-  status = mfrc522.PCD_Authenticate(MFRC522::PICC_CMD_MF_AUTH_KEY_A, 1, &key, &(mfrc522.uid)); //line 834
-  if (status != MFRC522::STATUS_OK) {
-    Serial.print(F("Authentication failed: "));
-    Serial.println(mfrc522.GetStatusCodeName(status));
-    return;
-  }
-
-  status = mfrc522.MIFARE_Read(block, buffer2, &len);
-  if (status != MFRC522::STATUS_OK) {
-    Serial.print(F("Reading failed: "));
-    Serial.println(mfrc522.GetStatusCodeName(status));
-    return;
-  }
-
-  for (uint8_t i = 0; i < 16; i++) {
-    Serial.write(buffer2[i] );
-  }
-
-
-  Serial.println(F("\n**End Reading**\n"));
-
-  delay(1000); //change value if you want to read cards faster
-
-  mfrc522.PICC_HaltA();
-  mfrc522.PCD_StopCrypto1();
-  }
-
-void add_pet(unsigned int tag_ID, int pet_num) {
-  switch (pet_num){
-    case 1:
-      preferences.putString("pet_1",String(tag_ID));
-      break;
-
-    case 2:
-      preferences.putString("pet_2",String(tag_ID));
-      break;
+void compare_pet(){
+  String temp_pet1 = preferences.getString("pet_1");
+  String temp_pet2 = preferences.getString("pet_2");
+  if ((StrRFID.equals(temp_pet1) && StrRFID != "")|| (StrRFID.equals(temp_pet2) && StrRFID != "")){
+    String StrRFIDtemp="{\"RFID\":\""+StrRFID+"\",\"DoorS\":\"1\"}";
+    snprintf (msg, MSG_BUFFER_SIZE,StrRFIDtemp.c_str());
+    Serial.print("Publish message: ");
+    Serial.println(msg);
+    client.publish("outTopic", msg);
+    state = OPEN;
   }
 }
 
-void remove_pet(unsigned int tag_ID, int pet_num) {
-  switch (pet_num){
-    case 1:
-      preferences.putString("pet_1", "";
-      break;
-
-    case 2:
-      preferences.putString("pet_2", "");
-      break;
-  }
-}
 
 void setup() {
   state = IDLE;  //initate in the idle state
@@ -336,6 +245,7 @@ void setup() {
   pinMode(IN2, OUTPUT); 
   pinMode(OPEN_BTN, INPUT);
   pinMode(PWR_LED, OUTPUT);
+  pinMode(TIMER_LED, OUTPUT);
   digitalWrite(PWR_LED, HIGH);
   analogWrite(IN1, MIN); //stops not energized
   analogWrite(IN2, MIN); 
@@ -374,6 +284,18 @@ void loop() {
     cur_FMD = digitalRead(FMD);
     if (old_FMD == LOW && cur_FMD == HIGH){
       //send notification to app for inside movement
+      snprintf (msg, MSG_BUFFER_SIZE, "{\"Alarm\":\"1\"}");
+      Serial.print("Publish message: ");
+      Serial.println(msg);
+      client.publish("outTopic", msg);
+    }
+    if (ReTimerStatus == 1){
+      digitalWrite(TIMER_LED, HIGH);
+      readRFID();
+      compare_pet();
+    }
+    else{
+      digitalWrite(TIMER_LED, LOW);
     }
     break;
   case OPEN:
@@ -388,11 +310,13 @@ void loop() {
     delay(3000);
     analogWrite(IN1, MAX); //stops motor
     analogWrite(IN2, MAX); 
-    // SEEN:
+    SEEN:
     delay(4000); //time before door will check to close (4s)
-    // if (reader == tag){//reader still see tag?
-    //   goto SEEN; //return to delay and check for tag again
-    // }
+    //reader still see tag?
+    readRFID();
+    if ((StrRFID.equals(preferences.getString("pet_1")) && StrRFID != "")|| (StrRFID.equals(preferences.getString("pet_2")) && StrRFID != "")){
+      goto SEEN; //return to delay and check for tag again
+    }
     state = CLOSE;
     break;
 

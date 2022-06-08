@@ -74,7 +74,7 @@ int ReOpenDoor=0;
 int ReTimerStatus=1;
 int RFIDCount=0;
 const char *RECERFID = NULL;  
-bool door_open_flag; //开门动作标志位
+bool door_open_flag; //开门动作标志位 flag when door open
 HardwareSerial mySerial(1);
 unsigned char incomingByte;
 
@@ -173,7 +173,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 
         if (!error) 
         {
-          parmPass(doc.as<JsonVariant>()); //将参数传递后打印输出
+          parmPass(doc.as<JsonVariant>()); //将参数传递后打印输出 save it and print it out
 
         }
     }
@@ -182,8 +182,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 }
 
 void reconnect() {
-  // Loop until we're reconnected
-  while (!client.connected()) {
+  if (!client.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     String clientId = "Device09";
@@ -199,17 +198,18 @@ void reconnect() {
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
+      Serial.println(" try again");
       // Wait 5 seconds before retrying
-      delay(5000);
+      // delay(5000);
     }
   }
 }
 String RFIDHEX[35],StrRFID;
+
+
 void readRFID() {
 StrRFID="";
-while(1)
-{
+while(1){
   byte message[] = {0xbb,0x00,0x39,0x00,0x09,0x00,0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x06,0x4a,0x7E};
   mySerial.write(message, sizeof(message));
   // put your main code here, to run repeatedly:
@@ -224,13 +224,11 @@ while(1)
     RFIDHEX[count++]=String(incomingByte,HEX);
     if(RFIDHEX[count-1].length()==1)
     RFIDHEX[count-1]="0"+RFIDHEX[count-1];
-    
   }
 //  if(value.length() > 1){
 //    Serial.print(value);
 //    Serial.println();
-    if(count==34)
-    {
+  if(count==34){
 //      Serial.println("Identification successful:");
       for(int i=20;i<=31;i++)
       {
@@ -243,15 +241,12 @@ while(1)
       Serial.println(StrRFID);
       count=0;
       break;
-      }
+    }
 //    value = "";
     
 //  }
   delay(100); 
-    
-    
-}
-
+  }
 }
 
 
@@ -270,7 +265,7 @@ void add_pet(unsigned int tag_ID, int pet_num) {
 void remove_pet(unsigned int tag_ID, int pet_num) {
   switch (pet_num){
     case 1:
-      preferences.putString("pet_1", "";
+      preferences.putString("pet_1", "");
       break;
 
     case 2:
