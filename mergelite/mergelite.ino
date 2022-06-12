@@ -139,7 +139,7 @@ void parmPass(JsonVariant parm){ //Json means MQTT parameter
     String temp_pet1 = preferences.getString("pet_1");
     String temp_pet2 = preferences.getString("pet_2");
     if (temp_pet1.equals(ID_pet)){
-      preferences.putString("pet_1", "");
+      preferences.putString("pet_1", ""); 
     }
     else if (temp_pet2.equals(ID_pet)){
       preferences.putString("pet_2", "");
