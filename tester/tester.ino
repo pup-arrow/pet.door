@@ -54,8 +54,8 @@ Preferences preferences;
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance
 // Hardcoded credentials for WiFi HotSpot
 //mosquitto linux
-const char* ssid = "Arrow";
-const char* password = "5805747059";
+const char* ssid = "bigdogwireless";
+const char* password = "Dogeatdog4041";
 const char* mqtt_server = "124.71.19.61";
 
 

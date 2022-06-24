@@ -22,8 +22,8 @@
 #define SW4 15 // bottom switch (D5)
 #define OPEN_BTN 13 //OPEN_BTN connected to pin 2 external interrupt (D2)
 // #define RFID_PWR 12 //OPEN_APP connected to pin 3 external interrupt (D3)
-#define PWR_LED 34  //PWR_LED connected to (S4)
-#define TIMER_LED 35  //PWR_LED connected to (S5)
+// #define PWR_LED 34  //PWR_LED connected to (S4)
+// #define TIMER_LED 35  //PWR_LED connected to (S5)
 #define FMD 36 //front motion detechtor (S0)
 #define MAX 255
 #define MIN 0
@@ -54,8 +54,8 @@ Preferences preferences;
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance
 // Hardcoded credentials for WiFi HotSpot
 //mosquitto linux
-const char* ssid = "Arrow";
-const char* password = "5805747059";
+const char* ssid = "bigdogwireless";
+const char* password = "Dogeatdog4041";
 const char* mqtt_server = "124.71.19.61";
 
 
@@ -244,15 +244,15 @@ void setup() {
   pinMode(IN1, OUTPUT); 
   pinMode(IN2, OUTPUT); 
   pinMode(OPEN_BTN, INPUT);
-  pinMode(PWR_LED, OUTPUT);
-  pinMode(TIMER_LED, OUTPUT);
-  digitalWrite(PWR_LED, HIGH);
+  // pinMode(PWR_LED, OUTPUT);
+  // pinMode(TIMER_LED, OUTPUT);
+  // digitalWrite(PWR_LED, HIGH);
   analogWrite(IN1, MIN); //stops not energized
   analogWrite(IN2, MIN); 
   attachInterrupt(digitalPinToInterrupt(OPEN_BTN),openbtnPressed,CHANGE); 
   preferences.begin("pet_id", false); // allows for saving id #s to permanent memory
   Serial.begin(115200);
-  mySerial.begin(115200,SERIAL_8N1,32,33);// initialize the  hardwareserial pin32,33
+  // mySerial.begin(115200,SERIAL_8N1,32,33);// initialize the  hardwareserial pin32,33
   SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN); // Init SPI bus
   mfrc522.PCD_Init();                    // Init MFRC522 card
   Serial.println(F("Read personal data on a MIFARE PICC:"));    //shows in serial that it is ready to read
@@ -291,14 +291,15 @@ void loop() {
       client.publish("outTopic", msg);
     }
     if (ReTimerStatus == 1){
-      digitalWrite(TIMER_LED, HIGH);
+      // digitalWrite(TIMER_LED, HIGH);
       readRFID();
       compare_pet();
     }
     else{
-      digitalWrite(TIMER_LED, LOW);
+      // digitalWrite(TIMER_LED, LOW);
     }
     break;
+
   case OPEN:
     Serial.println("OPEN");
     // Rotates the Motor counter-clockwise 
